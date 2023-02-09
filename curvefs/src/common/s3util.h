@@ -32,7 +32,10 @@ namespace s3util {
 inline std::string GenObjName(uint64_t chunkid, uint64_t index,
                               uint64_t compaction, uint64_t fsid,
                               uint64_t inodeid) {
-    return std::to_string(fsid) + "_" + std::to_string(inodeid) + "_" +
+    return std::to_string(fsid) + "/" +
+           std::to_string(inodeid/1000/1000) + "/" +
+           std::to_string(inodeid/1000) + "/" +
+           std::to_string(fsid) + "_" + std::to_string(inodeid) + "_" +
            std::to_string(chunkid) + "_" + std::to_string(index) + "_" +
            std::to_string(compaction);
 }

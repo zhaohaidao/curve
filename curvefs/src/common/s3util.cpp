@@ -28,9 +28,14 @@ namespace curvefs {
 namespace common {
 namespace s3util {
 bool ValidNameOfInode(const std::string &inode, const std::string &objName) {
-    std::vector<std::string> res;
-    curve::common::SplitString(objName, "_", &res);
-    return res.size() == 5 && res[1] == inode;
+    std::vector<std::string> objs,res;
+    curve::common::SplitString(objName, "/", &objs);
+    if (objs.size() == 4) {
+        curve::common::SplitString(objs[3], "_", &res);
+        return res.size() == 5 && res[1] == inode;
+    }
+
+    return false;
 }
 }  // namespace s3util
 }  // namespace common
