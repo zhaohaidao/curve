@@ -94,27 +94,34 @@ int DiskCacheBase::LoadAllCacheFile(std::set<std::string> *cachedObj) {
     }
 
     VLOG(3) << "LoadAllCacheFile start, dir: " << cachePath;
-    DIR *cacheDir = NULL;
-    struct dirent *cacheDirent = NULL;
-    cacheDir = posixWrapper_->opendir(cachePath.c_str());
-    if (!cacheDir) {
-        LOG(ERROR) << "LoadAllCacheFile, opendir error, errno = " << errno;
-        return -1;
-    }
-    while ((cacheDirent = posixWrapper_->readdir(cacheDir)) != NULL) {
-        if ((!strncmp(cacheDirent->d_name, ".", 1)) ||
-            (!strncmp(cacheDirent->d_name, "..", 2)))
-            continue;
-        std::string fileName = cacheDirent->d_name;
-        cachedObj->emplace(fileName);
-        VLOG(9) << "LoadAllCacheFile obj, name = " << fileName;
-    }
+    std::function<void(const std::string &path, std::set<std::string> *cacheObj)> listDir;
 
-    int rc = posixWrapper_->closedir(cacheDir);
-    if (rc < 0) {
-        LOG(ERROR) << "LoadAllCacheFile, opendir error, errno = " << errno;
-        return rc;
-    }
+    listDir = [&listDir ,this](const std::string &path, std::set<std::string> *cacheObj) {
+        DIR *dir;
+        struct dirent *ent;
+        std::string fileName, nextdir;
+        if ((dir = posixWrapper_->opendir(path.c_str())) != NULL) {
+            while((ent = posixWrapper_->readdir(dir)) != NULL) {
+                VLOG(9) << "LoadAllCacheFile obj, name = " << ent->d_name;
+                if (strncmp(ent->d_name, ".", 1) == 0 ||
+                        strncmp(ent->d_name, "..", 2) == 0) {
+                    continue;
+                } else if(ent->d_type == 8) {
+                    fileName = std::string(ent->d_name);
+                    VLOG(9) << "LoadAllCacheFile obj, name = " << fileName;
+                    cacheObj->emplace(fileName);
+                } else {
+                    nextdir = std::string(ent->d_name);
+                    nextdir = path + '/' + nextdir;
+                    listDir(nextdir, cacheObj);
+                }
+            }
+            posixWrapper_->closedir(dir);
+            return;
+        }
+    };
+
+    listDir(cachePath, cachedObj);
     VLOG(3) << "LoadAllCacheReadFile end, dir: " << cachePath;
     return 0;
 }

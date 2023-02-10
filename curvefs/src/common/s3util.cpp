@@ -27,6 +27,19 @@
 namespace curvefs {
 namespace common {
 namespace s3util {
+
+std::string GenPathByObjName(const std::string &objName) {
+    std::vector<std::string> objs;
+    uint64_t inodeid;
+    curve::common::SplitString(objName, "_", &objs);
+    inodeid = std::stoll(objs[1]);
+
+    return objs[0] + "/" + std::to_string(inodeid/1000/1000) + "/" +
+            std::to_string(inodeid/1000) + "/" + objName;
+
+
+}
+
 bool ValidNameOfInode(const std::string &inode, const std::string &objName) {
     std::vector<std::string> objs,res;
     curve::common::SplitString(objName, "/", &objs);

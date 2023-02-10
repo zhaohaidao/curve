@@ -28,6 +28,7 @@
 
 #include "curvefs/src/client/s3/client_s3_adaptor.h"
 #include "curvefs/src/client/s3/disk_cache_manager.h"
+#include "curvefs/src/common/s3util.h"
 
 namespace curvefs {
 
@@ -390,8 +391,8 @@ void DiskCacheManager::TrimCache() {
             }
 
             VLOG(6) << "obj will be removed01: " << cacheKey;
-            cacheReadFile = cacheReadFullDir + "/" + cacheKey;
-            cacheWriteFile = cacheWriteFullDir + "/" + cacheKey;
+            cacheReadFile = cacheReadFullDir + "/" + curvefs::common::s3util::GenPathByObjName(cacheKey);
+            cacheWriteFile = cacheWriteFullDir + "/" + curvefs::common::s3util::GenPathByObjName(cacheKey);
             struct stat statFile;
             int ret = 0;
             ret = posixWrapper_->stat(cacheWriteFile.c_str(), &statFile);

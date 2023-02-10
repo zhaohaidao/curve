@@ -40,6 +40,8 @@ inline std::string GenObjName(uint64_t chunkid, uint64_t index,
            std::to_string(compaction);
 }
 
+std::string GenPathByObjName(const std::string &objName);
+
 bool ValidNameOfInode(const std::string &inode, const std::string &objName);
 
 }  // namespace s3util

@@ -68,6 +68,7 @@ cc_library(
         "//src/client:curve_client",
         "//src/common:curve_common",
         "//src/common:curve_s3_adapter",
+        "//src/fs:lfs",
         "//curvefs/src/volume",
         "//curvefs/src/common:metric_utils",
         "//curvefs/src/common:dynamic_vlog",

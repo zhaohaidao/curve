@@ -85,7 +85,7 @@ int DiskCacheRead::LinkWriteToRead(const std::string fileName,
                                    const std::string fullWriteDir,
                                    const std::string fullReadDir) {
     VLOG(6) << "LinkWriteToRead start. name = " << fileName;
-    std::string fullReadPath, fullWritePath;
+    std::string fullReadPath, fullWritePath, dirPath;
     fullWritePath = fullWriteDir + "/" + fileName;
     fullReadPath = fullReadDir + "/" + fileName;
     int ret;
@@ -94,6 +94,20 @@ int DiskCacheRead::LinkWriteToRead(const std::string fileName,
                    << ", file = " << fullWritePath;
         return -1;
     }
+    
+    dirPath = fullReadPath;
+    size_t p = fullReadPath.find_last_of('/');
+    if (p != -1)
+    {
+        dirPath.erase(dirPath.begin()+p, dirPath.end());
+    }
+    auto localFS = Ext4FileSystemImpl::getInstance();
+    ret = localFS->Mkdir(dirPath);
+    if (ret < 0) {
+        LOG(ERROR) << "create dirpath error. errno = " << errno
+                   << ", file = " << dirPath;
+        return -1;     
+    }     
     ret = posixWrapper_->link(fullWritePath.c_str(), fullReadPath.c_str());
     if (ret < 0 &&
       errno != EEXIST ) {
