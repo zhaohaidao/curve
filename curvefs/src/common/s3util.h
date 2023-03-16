@@ -31,12 +31,14 @@ namespace s3util {
 
 inline std::string GenObjName(uint64_t chunkid, uint64_t index,
                               uint64_t compaction, uint64_t fsid,
-                              uint64_t inodeid, uint32_t objectPrefix) {
+                              uint64_t inodeid,
+                              uint32_t objectPrefix) {
     std::string objName;
     if (objectPrefix == 0) {
-        objName = std::to_string(fsid) + "_" + std::to_string(inodeid) + "_" +
-           std::to_string(chunkid) + "_" + std::to_string(index) + "_" +
-           std::to_string(compaction);
+        objName = std::to_string(fsid) + "_" +
+            std::to_string(inodeid) + "_" +
+            std::to_string(chunkid) + "_" + std::to_string(index) + "_" +
+            std::to_string(compaction);
     } else if (objectPrefix == 1) {
         objName = std::to_string(fsid) + "/" +
             std::to_string(inodeid/1000/1000) + "/" +
@@ -50,13 +52,13 @@ inline std::string GenObjName(uint64_t chunkid, uint64_t index,
             std::to_string(inodeid/1000) + "/" +
             std::to_string(fsid) + "_" + std::to_string(inodeid) + "_" +
             std::to_string(chunkid) + "_" + std::to_string(index) + "_" +
-            std::to_string(compaction);        
+            std::to_string(compaction);
     }
     return objName;
-
 }
 
-bool ValidNameOfInode(const std::string &inode, const std::string &objName, uint32_t objectPrefix);
+bool ValidNameOfInode(const std::string &inode, const std::string &objName,
+                      uint32_t objectPrefix);
 
 
 std::string GenPathByObjName(const std::string &objName, uint32_t objectPrefix);

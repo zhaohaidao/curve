@@ -30,7 +30,6 @@
 
 #include "src/common/concurrent/concurrent.h"
 #include "src/common/interruptible_sleeper.h"
-#include "src/fs/ext4_filesystem_impl.h"
 #include "src/common/lru_cache.h"
 #include "curvefs/src/common/wrap_posix.h"
 #include "curvefs/src/client/s3/disk_cache_base.h"
@@ -40,7 +39,6 @@ namespace client {
 
 using curve::common::SglLRUCache;
 using curvefs::common::PosixWrapper;
-using ::curve::fs::Ext4FileSystemImpl;
 
 class DiskCacheRead : public DiskCacheBase {
  public:

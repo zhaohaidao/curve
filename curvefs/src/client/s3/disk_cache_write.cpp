@@ -195,8 +195,8 @@ int DiskCacheWrite::GetUploadFile(const std::string &inode,
         return toUpload->size();
     }
     waitUpload_.remove_if([&](const std::string &filename) {
-        bool inodeFile =
-            curvefs::common::s3util::ValidNameOfInode(inode, filename, objectPrefix_);
+        bool inodeFile = curvefs::common::s3util::ValidNameOfInode(
+                inode, filename, objectPrefix_);
         if (inodeFile) {
             toUpload->emplace_back(filename);
         }
@@ -217,7 +217,8 @@ int DiskCacheWrite::FileExist(const std::string &inode) {
     }
 
     for (auto iter = cachedObj.begin(); iter != cachedObj.end(); iter++) {
-        bool exist = curvefs::common::s3util::ValidNameOfInode(inode, *iter, objectPrefix_);
+        bool exist = curvefs::common::s3util::ValidNameOfInode(
+                        inode, *iter, objectPrefix_);
         if (exist) {
             return 1;
         }
@@ -345,17 +346,19 @@ int DiskCacheWrite::UploadAllCacheWriteFile() {
         return -1;
     }
     std::vector<std::string> uploadObjs;
-    std::function<void(const std::string &path, std::vector<std::string> *cacheObj)> listDir;
-    listDir = [&listDir ,this](const std::string &path, std::vector<std::string> *cacheObj) {
+    std::function<void(const std::string &path,
+                       std::vector<std::string> *cacheObj)> listDir;
+    listDir = [&listDir, this](const std::string &path,
+                               std::vector<std::string> *cacheObj) {
         DIR *dir;
         struct dirent *ent;
         std::string fileName, nextdir;
         if ((dir = posixWrapper_->opendir(path.c_str())) != NULL) {
-            while((ent = posixWrapper_->readdir(dir)) != NULL) {
+            while ((ent = posixWrapper_->readdir(dir)) != NULL) {
                 if (strncmp(ent->d_name, ".", 1) == 0 ||
                         strncmp(ent->d_name, "..", 2) == 0) {
                     continue;
-                } else if(ent->d_type == 8) {
+                } else if (ent->d_type == 8) {
                     fileName = std::string(ent->d_name);
                     VLOG(9) << "LoadAllCacheFile obj, name = " << fileName;
                     cacheObj->emplace_back(fileName);
@@ -403,7 +406,8 @@ int DiskCacheWrite::UploadAllCacheWriteFile() {
             client_->UploadAsync(context);
         };
         auto context = std::make_shared<PutObjectAsyncContext>();
-        context->key = curvefs::common::s3util::GenPathByObjName(*iter, objectPrefix_);
+        context->key = curvefs::common::s3util::GenPathByObjName(
+                                *iter, objectPrefix_);
         context->buffer = buffer;
         context->bufferSize = fileSize;
         context->cb = cb;
@@ -441,22 +445,14 @@ int DiskCacheWrite::WriteDiskFile(const std::string fileName, const char *buf,
     VLOG(6) << "WriteDiskFile start. name = " << fileName
             << ", force = " << force << ", length = " << length;
     std::string fileFullPath;
-    std::string dirPath;
     int fd, ret;
     fileFullPath = GetCacheIoFullDir() + "/" + fileName;
     if (objectPrefix_ != 0) {
-        dirPath = fileFullPath;
-        size_t p = fileFullPath.find_last_of('/');
-        if (p != -1)
-        {
-            dirPath.erase(dirPath.begin()+p, dirPath.end());
-        }
-        auto localFS = Ext4FileSystemImpl::getInstance();
-        ret = localFS->Mkdir(dirPath);
+        ret = CreateDir(fileFullPath);
         if (ret < 0) {
             LOG(ERROR) << "create dirpath error. errno = " << errno
-                    << ", file = " << dirPath;
-            return -1;     
+                    << ", file = " << fileFullPath;
+            return -1;
         }
     }
     fd = posixWrapper_->open(fileFullPath.c_str(), O_RDWR | O_CREAT, MODE);

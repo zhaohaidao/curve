@@ -195,7 +195,7 @@ void CompactInodeJob::GenS3ReadRequests(
              beginRoundDown + index * blockSize <= curr->end; index++) {
             // read the block obj
             std::string objName = curvefs::common::s3util::GenObjName(
-                curr->chunkid, index, curr->compaction, ctx.fsId, 
+                curr->chunkid, index, curr->compaction, ctx.fsId,
                 ctx.inodeId, ctx.objectPrefix);
             uint64_t s3objBegin =
                 std::max(curr->chunkoff, beginRoundDown + index * blockSize);
@@ -560,7 +560,7 @@ void CompactInodeJob::CompactChunks(const S3CompactTask& task) {
     uint64_t s3adapterIndex;
     uint32_t objectPrefix;
     S3Adapter* s3adapter = SetupS3Adapter(task.inodeKey.fsId, &s3adapterIndex,
-                                          &blockSize, &chunkSize, &objectPrefix);
+                                        &blockSize, &chunkSize, &objectPrefix);
     if (s3adapter == nullptr) return;
     // need compact?
     std::vector<uint64_t> needCompact =

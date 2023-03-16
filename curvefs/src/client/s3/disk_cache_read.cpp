@@ -94,23 +94,15 @@ int DiskCacheRead::LinkWriteToRead(const std::string fileName,
                    << ", file = " << fullWritePath;
         return -1;
     }
-    
+
     if (objectPrefix_ != 0) {
-        dirPath = fullReadPath;
-        size_t p = fullReadPath.find_last_of('/');
-        if (p != -1)
-        {
-            dirPath.erase(dirPath.begin()+p, dirPath.end());
+        ret = CreateDir(fullReadPath);
+        if (ret < 0 && errno != EEXIST) {
+            LOG(ERROR) << "Mkdir error. ret = " << ret << ", errno = " << errno
+                       << ", path is " << fullReadPath;
         }
-        auto localFS = Ext4FileSystemImpl::getInstance();
-        ret = localFS->Mkdir(dirPath);
-        if (ret < 0) {
-            LOG(ERROR) << "create dirpath error. errno = " << errno
-                    << ", file = " << dirPath;
-            return -1;     
-        } 
     }
-    
+
     ret = posixWrapper_->link(fullWritePath.c_str(), fullReadPath.c_str());
     if (ret < 0 &&
       errno != EEXIST ) {

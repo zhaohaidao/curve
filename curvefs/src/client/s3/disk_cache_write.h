@@ -33,7 +33,6 @@
 
 #include "src/common/concurrent/concurrent.h"
 #include "src/common/interruptible_sleeper.h"
-#include "src/fs/ext4_filesystem_impl.h"
 #include "src/common/lru_cache.h"
 #include "src/common/throttle.h"
 #include "src/common/wait_interval.h"
@@ -51,7 +50,6 @@ using curvefs::common::PosixWrapper;
 using curve::common::InterruptibleSleeper;
 using ::curve::common::SglLRUCache;
 using curve::common::PutObjectAsyncCallBack;
-using ::curve::fs::Ext4FileSystemImpl;
 
 class DiskCacheWrite : public DiskCacheBase {
  public:

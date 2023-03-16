@@ -45,6 +45,12 @@ class MockDiskCacheBase : public DiskCacheBase {
     MOCK_METHOD1(IsFileExist,
                  bool(const std::string file));
 
+    MOCK_METHOD1(IsDirExist,
+                 bool(const std::string dir));
+
+    MOCK_METHOD1(CreateDir,
+                 int(const std::string dirName));
+
     MOCK_METHOD0(GetCacheIoFullDir,
                  std::string());
 };

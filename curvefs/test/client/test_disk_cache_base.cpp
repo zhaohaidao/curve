@@ -56,7 +56,7 @@ class TestDiskCacheBase : public ::testing::Test {
     virtual void SetUp() {
         wrapper_ = std::make_shared<MockPosixWrapper>();
         diskCacheBase_ = std::make_shared<DiskCacheBase>();
-        diskCacheBase_->Init(wrapper_, "/mnt/test");
+        diskCacheBase_->Init(wrapper_, "/mnt/test", 0);
     }
 
     virtual void TearDown() {
@@ -99,6 +99,19 @@ TEST_F(TestDiskCacheBase, IsFileExist) {
     EXPECT_CALL(*wrapper_, stat(NotNull(), NotNull()))
         .WillOnce(Return(0));
     ret = diskCacheBase_->IsFileExist(fileName);
+    ASSERT_EQ(true, ret);
+}
+
+TEST_F(TestDiskCacheBase, IsDirExist) {
+    std::string dirName = "test";
+    EXPECT_CALL(*wrapper_, stat(NotNull(), NotNull()))
+        .WillOnce(Return(-1));
+    bool ret = diskCacheBase_->IsDirExist(dirName);
+    ASSERT_EQ(false, ret);
+
+    EXPECT_CALL(*wrapper_, stat(NotNull(), NotNull()))
+        .WillOnce(Return(0));
+    ret = diskCacheBase_->IsFileExist(dirName);
     ASSERT_EQ(true, ret);
 }
 

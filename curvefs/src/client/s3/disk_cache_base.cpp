@@ -77,13 +77,55 @@ bool DiskCacheBase::IsFileExist(const std::string file) {
         VLOG(6) << "file is not exist, dir = " << file << ", errno = " << errno;
         return false;
     }
-    return true;
+    return S_ISREG(statFile.st_mode);
+}
+
+bool DiskCacheBase::IsDirExist(const std::string dir) {
+    struct stat statDir;
+    int ret;
+    ret = posixWrapper_->stat(dir.c_str(), &statDir);
+    if (ret < 0) {
+        VLOG(6) << "dir is not exist, dir = " << dir << ", errno = " << errno;
+        return false;
+    }
+    return S_ISDIR(statDir.st_mode);
 }
 
 std::string DiskCacheBase::GetCacheIoFullDir() {
     std::string fullPath;
     fullPath = cacheDir_ + "/" + cacheIoDir_;
     return fullPath;
+}
+
+int DiskCacheBase::CreateDir(const std::string dir) {
+    size_t p = dir.find_last_of('/');
+    std::string dirPath = dir;
+    if (p != -1) {
+        dirPath.erase(dirPath.begin()+p, dirPath.end());
+    }
+    std::vector<std::string> names;
+    ::curve::common::SplitString(dirPath, "/", &names);
+    // root dir must exists
+    if (0 == names.size())
+        return 0;
+
+    std::string path;
+    for (size_t i = 0; i < names.size(); ++i) {
+        if (0 == i && dirPath[0] != '/')  // 相对路径
+            path = path + names[i];
+        else
+            path = path + "/" + names[i];
+
+        if (IsDirExist(path)) {
+            continue;
+        }
+        // 目录需要755权限，不然会出现“Permission denied”
+        if (posixWrapper_->mkdir(path.c_str(), 0755) < 0) {
+            LOG(WARNING) << "mkdir " << path << " failed. "<< strerror(errno);
+            return -errno;
+        }
+    }
+    return 0;
 }
 
 int DiskCacheBase::LoadAllCacheFile(std::set<std::string> *cachedObj) {
@@ -95,19 +137,21 @@ int DiskCacheBase::LoadAllCacheFile(std::set<std::string> *cachedObj) {
     }
 
     VLOG(3) << "LoadAllCacheFile start, dir: " << cachePath;
-    std::function<void(const std::string &path, std::set<std::string> *cacheObj)> listDir;
+    std::function<void(const std::string &path,
+                       std::set<std::string> *cacheObj)> listDir;
 
-    listDir = [&listDir ,this](const std::string &path, std::set<std::string> *cacheObj) {
+    listDir = [&listDir, this](const std::string &path,
+                               std::set<std::string> *cacheObj) {
         DIR *dir;
         struct dirent *ent;
         std::string fileName, nextdir;
         if ((dir = posixWrapper_->opendir(path.c_str())) != NULL) {
-            while((ent = posixWrapper_->readdir(dir)) != NULL) {
+            while ((ent = posixWrapper_->readdir(dir)) != NULL) {
                 VLOG(9) << "LoadAllCacheFile obj, name = " << ent->d_name;
                 if (strncmp(ent->d_name, ".", 1) == 0 ||
                         strncmp(ent->d_name, "..", 2) == 0) {
                     continue;
-                } else if(ent->d_type == 8) {
+                } else if (ent->d_type == 8) {
                     fileName = std::string(ent->d_name);
                     VLOG(9) << "LoadAllCacheFile obj, name = " << fileName;
                     cacheObj->emplace(fileName);

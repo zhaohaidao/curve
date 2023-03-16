@@ -64,11 +64,12 @@ class TestDiskCacheManager : public ::testing::Test {
         diskCacheRead_ = std::make_shared<MockDiskCacheRead>();
         diskCacheManager_ = std::make_shared<DiskCacheManager>(
             wrapper, diskCacheWrite_, diskCacheRead_);
-        diskCacheRead_->Init(wrapper, "/mnt/test");
+        diskCacheRead_->Init(wrapper, "/mnt/test", 0);
          std::shared_ptr<SglLRUCache<std::string>> cachedObjName
           = std::make_shared<SglLRUCache<std::string>>
               (0, std::make_shared<CacheMetrics>("diskcache"));
-        diskCacheWrite_->Init(client_, wrapper, "/mnt/test", 1, cachedObjName);
+        diskCacheWrite_->Init(client_, wrapper, "/mnt/test", 0,
+                                    1, cachedObjName);
     }
 
     virtual void TearDown() {
@@ -246,6 +247,7 @@ TEST_F(TestDiskCacheManager, IsDiskCacheFull) {
 
 TEST_F(TestDiskCacheManager, IsDiskCacheSafe) {
     S3ClientAdaptorOption option;
+    option.objectPrefix = 0;
     option.diskCacheOpt.diskCacheType = (DiskCacheType)2;
     option.diskCacheOpt.cacheDir = "/mnt/test_unit";
     option.diskCacheOpt.trimCheckIntervalSec = 1;
@@ -261,6 +263,7 @@ TEST_F(TestDiskCacheManager, IsDiskCacheSafe) {
     option.diskCacheOpt.fullRatio = 100;
     option.diskCacheOpt.safeRatio = 99;
     option.diskCacheOpt.maxUsableSpaceBytes = 100000000;
+    option.objectPrefix = 0;
     diskCacheManager_->Init(client_, option);
     ret = diskCacheManager_->IsDiskCacheSafe();
     ASSERT_EQ(true, ret);
@@ -273,6 +276,7 @@ TEST_F(TestDiskCacheManager, TrimStop) {
 
 TEST_F(TestDiskCacheManager, TrimRun_1) {
     S3ClientAdaptorOption option;
+    option.objectPrefix = 0;
     option.diskCacheOpt.cacheDir = "/tmp";
     option.diskCacheOpt.trimCheckIntervalSec = 1;
     EXPECT_CALL(*wrapper, stat(NotNull(), NotNull())).WillOnce(Return(-1));
@@ -308,6 +312,7 @@ TEST_F(TestDiskCacheManager, TrimCache_2) {
     S3ClientAdaptorOption option;
     option.diskCacheOpt.cacheDir = "/tmp";
     option.diskCacheOpt.trimCheckIntervalSec = 1;
+    option.objectPrefix = 0;
     EXPECT_CALL(*wrapper, stat(NotNull(), NotNull())).WillOnce(Return(-1));
     EXPECT_CALL(*wrapper, mkdir(_, _)).WillOnce(Return(-1));
     diskCacheManager_->Init(client_, option);
@@ -345,6 +350,7 @@ TEST_F(TestDiskCacheManager, TrimCache_4) {
     option.diskCacheOpt.trimCheckIntervalSec = 1;
     EXPECT_CALL(*wrapper, stat(NotNull(), NotNull())).WillOnce(Return(-1));
     EXPECT_CALL(*wrapper, mkdir(_, _)).WillOnce(Return(-1));
+    option.objectPrefix = 0;
     diskCacheManager_->Init(client_, option);
     diskCacheManager_->InitMetrics("test");
     diskCacheManager_->AddCache("test");
@@ -379,6 +385,7 @@ TEST_F(TestDiskCacheManager, TrimCache_5) {
     S3ClientAdaptorOption option;
     option.diskCacheOpt.cacheDir = "/tmp";
     option.diskCacheOpt.trimCheckIntervalSec = 1;
+    option.objectPrefix = 0;
     EXPECT_CALL(*wrapper, stat(NotNull(), NotNull())).WillOnce(Return(-1));
     EXPECT_CALL(*wrapper, mkdir(_, _)).WillOnce(Return(-1));
     diskCacheManager_->Init(client_, option);
@@ -400,7 +407,7 @@ TEST_F(TestDiskCacheManager, TrimCache_noexceed) {
     option.diskCacheOpt.maxUsableSpaceBytes = 0;
     option.diskCacheOpt.cmdTimeoutSec = 5;
     option.diskCacheOpt.asyncLoadPeriodMs = 10;
-
+    option.objectPrefix = 0;
     diskCacheManager_->Init(client_, option);
     diskCacheManager_->AddCache("test");
 
@@ -428,6 +435,7 @@ TEST_F(TestDiskCacheManager, TrimCache_noexceed) {
 
 TEST_F(TestDiskCacheManager, TrimCache_exceed) {
     S3ClientAdaptorOption option;
+    option.objectPrefix = 0;
     option.diskCacheOpt.maxFileNums = 5;
     option.diskCacheOpt.diskCacheType = (DiskCacheType)2;
     option.diskCacheOpt.cacheDir = "/tmp";

@@ -27,7 +27,6 @@
 #include "curvefs/test/client/mock_client_s3.h"
 #include "curvefs/src/client/s3/disk_cache_write.h"
 #include "curvefs/src/client/s3/client_s3_adaptor.h"
-#include "src/common/concurrent/concurrent.h"
 
 namespace curvefs {
 namespace client {
@@ -67,7 +66,7 @@ class TestDiskCacheWrite : public ::testing::Test {
          std::shared_ptr<SglLRUCache<std::string>> cachedObjName
           = std::make_shared<SglLRUCache<std::string>>
               (0, std::make_shared<CacheMetrics>("diskcache"));
-        diskCacheWrite_->Init(client_, wrapper_, "test", 1, cachedObjName);
+        diskCacheWrite_->Init(client_, wrapper_, "test", 0, 1, cachedObjName);
     }
 
     virtual void TearDown() {

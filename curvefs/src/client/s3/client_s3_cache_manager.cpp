@@ -637,7 +637,8 @@ void FileCacheManager::PrefetchForBlock(const S3ReadRequest &req,
     uint64_t blockIndex = startBlockIndex;
     for (uint32_t i = 0; i < prefetchBlocks; i++) {
         std::string name = curvefs::common::s3util::GenObjName(
-            req.chunkId, blockIndex, req.compaction, req.fsId, req.inodeId, objectPrefix);
+            req.chunkId, blockIndex, req.compaction,
+            req.fsId, req.inodeId, objectPrefix);
         uint64_t maxReadLen = (blockIndex + 1) * blockSize;
         uint64_t needReadLen = maxReadLen > fileLen
                                    ? fileLen - blockIndex * blockSize

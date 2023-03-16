@@ -59,7 +59,7 @@ class TestDiskCacheRead : public ::testing::Test {
         diskCacheRead_ = std::make_shared<DiskCacheRead>();
         wrapper_ = std::make_shared<MockPosixWrapper>();
 
-        diskCacheRead_->Init(wrapper_, "test");
+        diskCacheRead_->Init(wrapper_, "test", 0);
     }
 
     virtual void TearDown() {

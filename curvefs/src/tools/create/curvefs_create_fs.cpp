@@ -110,8 +110,9 @@ void CreateFsTool::PrintHelp() {
               << " -s3_endpoint=" << FLAGS_s3_endpoint
               << " -s3_bucket_name=" << FLAGS_s3_bucket_name
               << " -s3_blocksize=" << FLAGS_s3_blocksize
-              << " -s3_chunksize=" << FLAGS_s3_chunksize 
-              << " -s3_objectPrefix=" << FLAGS_s3_objectprefix << "]" << std::endl;
+              << " -s3_chunksize=" << FLAGS_s3_chunksize
+              << " -s3_objectPrefix=" << FLAGS_s3_objectprefix
+              << "]" << std::endl;
 }
 
 void CreateFsTool::AddUpdateFlags() {

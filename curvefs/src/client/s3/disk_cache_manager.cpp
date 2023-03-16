@@ -392,8 +392,12 @@ void DiskCacheManager::TrimCache() {
             }
 
             VLOG(6) << "obj will be removed01: " << cacheKey;
-            cacheReadFile = cacheReadFullDir + "/" + curvefs::common::s3util::GenPathByObjName(cacheKey, objectPrefix_);
-            cacheWriteFile = cacheWriteFullDir + "/" + curvefs::common::s3util::GenPathByObjName(cacheKey, objectPrefix_);
+            cacheReadFile = cacheReadFullDir + "/" +
+                    curvefs::common::s3util::GenPathByObjName(
+                        cacheKey, objectPrefix_);
+            cacheWriteFile = cacheWriteFullDir + "/" +
+                    curvefs::common::s3util::GenPathByObjName(
+                        cacheKey, objectPrefix_);
             struct stat statFile;
             int ret = 0;
             ret = posixWrapper_->stat(cacheWriteFile.c_str(), &statFile);
