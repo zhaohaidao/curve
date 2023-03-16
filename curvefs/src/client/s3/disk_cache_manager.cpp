@@ -66,6 +66,7 @@ DiskCacheManager::DiskCacheManager(std::shared_ptr<PosixWrapper> posixWrapper,
     safeRatio_ = 0;
     diskUsedInit_ = false;
     maxUsableSpaceBytes_ = 0;
+    objectPrefix_ = 0;
     // cannot limit the size,
     // because cache is been delete must after upload to s3
     cachedObjName_ = std::make_shared<
@@ -86,10 +87,10 @@ int DiskCacheManager::Init(std::shared_ptr<S3Client> client,
     maxUsableSpaceBytes_ = option.diskCacheOpt.maxUsableSpaceBytes;
     maxFileNums_ = option.diskCacheOpt.maxFileNums;
     cmdTimeoutSec_ = option.diskCacheOpt.cmdTimeoutSec;
-
-    cacheWrite_->Init(client_, posixWrapper_, cacheDir_,
-                      option.diskCacheOpt.asyncLoadPeriodMs, cachedObjName_);
-    cacheRead_->Init(posixWrapper_, cacheDir_);
+    objectPrefix_ = option.objectPrefix;
+    cacheWrite_->Init(client_, posixWrapper_, cacheDir_, objectPrefix_,
+        option.diskCacheOpt.asyncLoadPeriodMs, cachedObjName_);
+    cacheRead_->Init(posixWrapper_, cacheDir_, objectPrefix_);
     int ret;
     ret = CreateDir();
     if (ret < 0) {
@@ -391,8 +392,8 @@ void DiskCacheManager::TrimCache() {
             }
 
             VLOG(6) << "obj will be removed01: " << cacheKey;
-            cacheReadFile = cacheReadFullDir + "/" + curvefs::common::s3util::GenPathByObjName(cacheKey);
-            cacheWriteFile = cacheWriteFullDir + "/" + curvefs::common::s3util::GenPathByObjName(cacheKey);
+            cacheReadFile = cacheReadFullDir + "/" + curvefs::common::s3util::GenPathByObjName(cacheKey, objectPrefix_);
+            cacheWriteFile = cacheWriteFullDir + "/" + curvefs::common::s3util::GenPathByObjName(cacheKey, objectPrefix_);
             struct stat statFile;
             int ret = 0;
             ret = posixWrapper_->stat(cacheWriteFile.c_str(), &statFile);

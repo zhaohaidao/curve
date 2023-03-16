@@ -45,7 +45,7 @@ class DiskCacheBase {
     DiskCacheBase() {}
     virtual ~DiskCacheBase() {}
     virtual void Init(std::shared_ptr<PosixWrapper> wrapper,
-                      const std::string cacheDir);
+                      const std::string cacheDir, uint32_t objectPrefix);
     /**
      * @brief Create Read/Write Cache Dir.
     */
@@ -57,11 +57,10 @@ class DiskCacheBase {
     virtual std::string GetCacheIoFullDir();
 
     virtual int LoadAllCacheFile(std::set<std::string> *cachedObj);
-
+    uint32_t objectPrefix_;
  private:
     std::string cacheIoDir_;
     std::string cacheDir_;
-
     // file system operation encapsulation
     std::shared_ptr<PosixWrapper> posixWrapper_;
 };

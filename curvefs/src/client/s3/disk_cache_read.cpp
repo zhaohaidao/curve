@@ -37,9 +37,9 @@ namespace curvefs {
 namespace client {
 
 void DiskCacheRead::Init(std::shared_ptr<PosixWrapper> posixWrapper,
-                         const std::string cacheDir) {
+                         const std::string cacheDir, uint32_t objectPrefix) {
     posixWrapper_ = posixWrapper;
-    DiskCacheBase::Init(posixWrapper, cacheDir);
+    DiskCacheBase::Init(posixWrapper, cacheDir, objectPrefix);
 }
 
 int DiskCacheRead::ReadDiskFile(const std::string name, char *buf,
@@ -95,19 +95,22 @@ int DiskCacheRead::LinkWriteToRead(const std::string fileName,
         return -1;
     }
     
-    dirPath = fullReadPath;
-    size_t p = fullReadPath.find_last_of('/');
-    if (p != -1)
-    {
-        dirPath.erase(dirPath.begin()+p, dirPath.end());
+    if (objectPrefix_ != 0) {
+        dirPath = fullReadPath;
+        size_t p = fullReadPath.find_last_of('/');
+        if (p != -1)
+        {
+            dirPath.erase(dirPath.begin()+p, dirPath.end());
+        }
+        auto localFS = Ext4FileSystemImpl::getInstance();
+        ret = localFS->Mkdir(dirPath);
+        if (ret < 0) {
+            LOG(ERROR) << "create dirpath error. errno = " << errno
+                    << ", file = " << dirPath;
+            return -1;     
+        } 
     }
-    auto localFS = Ext4FileSystemImpl::getInstance();
-    ret = localFS->Mkdir(dirPath);
-    if (ret < 0) {
-        LOG(ERROR) << "create dirpath error. errno = " << errno
-                   << ", file = " << dirPath;
-        return -1;     
-    }     
+    
     ret = posixWrapper_->link(fullWritePath.c_str(), fullReadPath.c_str());
     if (ret < 0 &&
       errno != EEXIST ) {

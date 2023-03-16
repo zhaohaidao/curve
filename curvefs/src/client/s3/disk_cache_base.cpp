@@ -37,9 +37,10 @@ namespace client {
 #define CACHE_READ_DIR  "cacheread"
 
 void DiskCacheBase::Init(std::shared_ptr<PosixWrapper> wrapper,
-                         const std::string cacheDir) {
+                         const std::string cacheDir, uint32_t objectPrefix) {
     cacheDir_ = cacheDir;
     posixWrapper_ = wrapper;
+    objectPrefix_ = objectPrefix;
 }
 
 int DiskCacheBase::CreateIoDir(bool writreDir) {
