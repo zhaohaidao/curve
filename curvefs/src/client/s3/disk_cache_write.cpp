@@ -181,7 +181,7 @@ void DiskCacheWrite::UploadFile(const std::list<std::string> &toUpload,
 }
 
 bool DiskCacheWrite::WriteCacheValid() {
-    return IsFileExist(GetCacheIoFullDir());
+    return IsDirExist(GetCacheIoFullDir());
 }
 
 int DiskCacheWrite::GetUploadFile(const std::string &inode,
@@ -340,7 +340,7 @@ int DiskCacheWrite::UploadAllCacheWriteFile() {
     struct dirent *cacheWriteDirent = NULL;
     int doRet;
     fileFullPath = GetCacheIoFullDir();
-    ret = IsFileExist(fileFullPath);
+    ret = IsDirExist(fileFullPath);
     if (!ret) {
         LOG(ERROR) << "cache write dir is not exist.";
         return -1;

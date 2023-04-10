@@ -130,7 +130,7 @@ int DiskCacheBase::CreateDir(const std::string dir) {
 
 int DiskCacheBase::LoadAllCacheFile(std::set<std::string> *cachedObj) {
     std::string cachePath = GetCacheIoFullDir();
-    bool ret = IsFileExist(cachePath);
+    bool ret = IsDirExist(cachePath);
     if (!ret) {
         LOG(ERROR) << "LoadAllCacheFile, cache read dir is not exist.";
         return -1;

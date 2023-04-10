@@ -273,7 +273,7 @@ extern std::function<void(curve::common::Configuration*,
     SetS3_chunksize;
 extern std::function<void(curve::common::Configuration*,
                           google::CommandLineFlagInfo*)>
-    SetS3_objectprefix;
+    SetS3_objectPrefix;
 extern std::function<void(curve::common::Configuration*,
                           google::CommandLineFlagInfo*)>
     SetEnableSumInDir;

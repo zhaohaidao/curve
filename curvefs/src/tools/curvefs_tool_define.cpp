@@ -74,7 +74,7 @@ DEFINE_string(s3_endpoint, "endpoint", "s3 endpoint");
 DEFINE_string(s3_bucket_name, "bucketname", "s3 bucket name");
 DEFINE_uint64(s3_blocksize, 1048576, "s3 block size");
 DEFINE_uint64(s3_chunksize, 4194304, "s3 chunk size");
-DEFINE_uint32(s3_objectprefix, 0, "object prefix");
+DEFINE_uint32(s3_objectPrefix, 0, "object prefix");
 DEFINE_bool(enableSumInDir, false, "statistic info in xattr");
 DEFINE_uint64(capacity, (uint64_t)100 * 1024 * 1024 * 1024,
               "capacity of fs, default 100G");
@@ -251,10 +251,10 @@ std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
                   &FLAGS_s3_chunksize);
 
 std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
-    SetS3_objectprefix =
+    SetS3_objectPrefix =
         std::bind(&SetDiffFlagInfo<uint32_t>, std::placeholders::_1,
-                  std::placeholders::_2, "s3_objectprefix", "s3.objectprefix",
-                  &FLAGS_s3_objectprefix);
+                  std::placeholders::_2, "s3_objectPrefix", "s3.objectPrefix",
+                  &FLAGS_s3_objectPrefix);
 
 std::function<void(curve::common::Configuration*, google::CommandLineFlagInfo*)>
     SetEnableSumInDir = std::bind(&SetFlagInfo<bool>, std::placeholders::_1,
