@@ -409,7 +409,6 @@ TEST_F(TestDiskCacheManager, TrimCache_noexceed) {
     option.diskCacheOpt.asyncLoadPeriodMs = 10;
     option.objectPrefix = 0;
     diskCacheManager_->Init(client_, option);
-    diskCacheManager_->AddCache("test");
 
     std::string buf = "test";
     EXPECT_CALL(*diskCacheWrite_, GetCacheIoFullDir())
@@ -422,11 +421,17 @@ TEST_F(TestDiskCacheManager, TrimCache_noexceed) {
     stat.f_blocks = 1;
     stat.f_bfree = 0;
     stat.f_bavail = 0;
+    EXPECT_CALL(*wrapper, statfs(NotNull(), _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(stat), Return(-1)));
+    EXPECT_CALL(*wrapper, remove(_)).WillRepeatedly(Return(0));
+    diskCacheManager_->AddCache("test");
+
+    struct stat rf;
+    rf.st_size = 0;
     EXPECT_CALL(*wrapper, stat(NotNull(), NotNull()))
-        .Times(3)
-        .WillOnce(Return(0))
+        .Times(2)
         .WillOnce(Return(-1))
-        .WillOnce(Return(0));
+        .WillOnce(DoAll(SetArgPointee<1>(rf), Return(0)));
     int ret = diskCacheManager_->TrimRun();
     diskCacheManager_->InitMetrics("test");
     sleep(6);

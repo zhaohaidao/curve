@@ -52,7 +52,6 @@ class DiskCacheBase {
     */
     virtual int CreateIoDir(bool writreDir);
     virtual bool IsFileExist(const std::string file);
-    virtual bool IsDirExist(const std::string dir);
     virtual int CreateDir(const std::string name);
     /**
      * @brief Get Read/Write Cache full Dir(include CacheDir_).

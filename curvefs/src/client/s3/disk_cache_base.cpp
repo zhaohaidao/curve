@@ -44,7 +44,6 @@ void DiskCacheBase::Init(std::shared_ptr<PosixWrapper> wrapper,
 }
 
 int DiskCacheBase::CreateIoDir(bool writreDir) {
-    struct stat statFile;
     bool ret;
     std::string FullDirPath;
 
@@ -77,18 +76,7 @@ bool DiskCacheBase::IsFileExist(const std::string file) {
         VLOG(6) << "file is not exist, dir = " << file << ", errno = " << errno;
         return false;
     }
-    return S_ISREG(statFile.st_mode);
-}
-
-bool DiskCacheBase::IsDirExist(const std::string dir) {
-    struct stat statDir;
-    int ret;
-    ret = posixWrapper_->stat(dir.c_str(), &statDir);
-    if (ret < 0) {
-        VLOG(6) << "dir is not exist, dir = " << dir << ", errno = " << errno;
-        return false;
-    }
-    return S_ISDIR(statDir.st_mode);
+    return true;
 }
 
 std::string DiskCacheBase::GetCacheIoFullDir() {
@@ -116,7 +104,7 @@ int DiskCacheBase::CreateDir(const std::string dir) {
         else
             path = path + "/" + names[i];
 
-        if (IsDirExist(path)) {
+        if (IsFileExist(path)) {
             continue;
         }
         // 目录需要755权限，不然会出现“Permission denied”
@@ -130,18 +118,18 @@ int DiskCacheBase::CreateDir(const std::string dir) {
 
 int DiskCacheBase::LoadAllCacheFile(std::set<std::string> *cachedObj) {
     std::string cachePath = GetCacheIoFullDir();
-    bool ret = IsDirExist(cachePath);
+    bool ret = IsFileExist(cachePath);
     if (!ret) {
         LOG(ERROR) << "LoadAllCacheFile, cache read dir is not exist.";
         return -1;
     }
 
     VLOG(3) << "LoadAllCacheFile start, dir: " << cachePath;
-    std::function<void(const std::string &path,
+    std::function<bool(const std::string &path,
                        std::set<std::string> *cacheObj)> listDir;
 
     listDir = [&listDir, this](const std::string &path,
-                               std::set<std::string> *cacheObj) {
+                               std::set<std::string> *cacheObj) -> bool {
         DIR *dir;
         struct dirent *ent;
         std::string fileName, nextdir;
@@ -158,15 +146,24 @@ int DiskCacheBase::LoadAllCacheFile(std::set<std::string> *cachedObj) {
                 } else {
                     nextdir = std::string(ent->d_name);
                     nextdir = path + '/' + nextdir;
-                    listDir(nextdir, cacheObj);
+                    if (!listDir(nextdir, cacheObj)) {
+                        return false;
+                    }
                 }
             }
-            posixWrapper_->closedir(dir);
-            return;
+            int ret = posixWrapper_->closedir(dir);
+            if (ret < 0) {
+                LOG(ERROR) << "close dir "  << dir << ", error = " << errno;
+            }
+            return ret >= 0;
         }
+        LOG(ERROR) << "LoadAllCacheFile Opendir error, path =" << path;
+        return false;
     };
-
-    listDir(cachePath, cachedObj);
+    ret = listDir(cachePath, cachedObj);
+    if (!ret) {
+        return -1;
+    }
     VLOG(3) << "LoadAllCacheReadFile end, dir: " << cachePath;
     return 0;
 }

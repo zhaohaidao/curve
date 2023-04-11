@@ -33,13 +33,14 @@ std::string GenPathByObjName(const std::string &objName,
     std::vector<std::string> objs;
     uint64_t inodeid;
     curve::common::SplitString(objName, "_", &objs);
-    inodeid = std::stoll(objs[1]);
     if (objectPrefix_ == 0) {
         return objName;
     } else if (objectPrefix_ == 1) {
+        inodeid = std::stoll(objs[1]);
         return objs[0] + "/" + std::to_string(inodeid/1000/1000) + "/" +
                std::to_string(inodeid/1000) + "/" + objName;
     } else {
+        inodeid = std::stoll(objs[1]);
         return objs[0] + "/" + std::to_string(inodeid%256) + "/" +
                std::to_string(inodeid/1000) + "/" + objName;
     }

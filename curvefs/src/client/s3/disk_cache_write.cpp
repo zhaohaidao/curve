@@ -181,7 +181,7 @@ void DiskCacheWrite::UploadFile(const std::list<std::string> &toUpload,
 }
 
 bool DiskCacheWrite::WriteCacheValid() {
-    return IsDirExist(GetCacheIoFullDir());
+    return IsFileExist(GetCacheIoFullDir());
 }
 
 int DiskCacheWrite::GetUploadFile(const std::string &inode,
@@ -340,16 +340,16 @@ int DiskCacheWrite::UploadAllCacheWriteFile() {
     struct dirent *cacheWriteDirent = NULL;
     int doRet;
     fileFullPath = GetCacheIoFullDir();
-    ret = IsDirExist(fileFullPath);
+    ret = IsFileExist(fileFullPath);
     if (!ret) {
         LOG(ERROR) << "cache write dir is not exist.";
         return -1;
     }
     std::vector<std::string> uploadObjs;
-    std::function<void(const std::string &path,
+    std::function<bool(const std::string &path,
                        std::vector<std::string> *cacheObj)> listDir;
     listDir = [&listDir, this](const std::string &path,
-                               std::vector<std::string> *cacheObj) {
+                               std::vector<std::string> *cacheObj) -> bool {
         DIR *dir;
         struct dirent *ent;
         std::string fileName, nextdir;
@@ -365,14 +365,24 @@ int DiskCacheWrite::UploadAllCacheWriteFile() {
                 } else {
                     nextdir = std::string(ent->d_name);
                     nextdir = path + '/' + nextdir;
-                    listDir(nextdir, cacheObj);
+                    if (!listDir(nextdir, cacheObj)) {
+                        return false;
+                    }
                 }
             }
-            posixWrapper_->closedir(dir);
-            return;
+            int ret = posixWrapper_->closedir(dir);
+            if (ret < 0) {
+                LOG(ERROR) << "close dir "  << dir << ", error = " << errno;
+            }
+            return ret >= 0;
         }
+        LOG(ERROR) << "cache write dir open failed, path: " << path;
+        return false;
     };
-    listDir(fileFullPath, &uploadObjs);
+    ret = listDir(fileFullPath, &uploadObjs);
+    if (!ret) {
+        return -1;
+    }
     if (uploadObjs.empty()) {
         return 0;
     }
